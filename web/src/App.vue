@@ -1,33 +1,17 @@
 <template>
-<div>
-    <div>Bot Name: {{botname}}</div>
-    <div>Bot Power: {{botpower}}</div>
-</div>
+<navbar />
 <router-view/>
 </template>
 
 <script>
-import $ from "jquery";
-import {ref} from 'vue';
 
+import Navbar from '@/components/NavBar.vue'
+import 'bootstrap/dist/css/bootstrap.min.css'
+import 'bootstrap/dist/js/bootstrap'
 
 export default {
-    name: "App",
-    setup: () => {
-        let botname = ref("");
-        let botpower = ref("");
-        $.ajax({
-            url: "http://127.0.0.1:3000/pk/getbotinfo/",
-            type: "get",
-            success: resp => {
-                botname.value = resp.name;
-                botpower.value = resp.rating;
-            }
-        })
-        return {
-            botname,
-            botpower
-        }
+    components: {
+        Navbar
     }
 }
 
@@ -36,7 +20,7 @@ export default {
 
 <style>
 body {
-    background-image: url("@/assets/background.png");
+    background-image: url("@/assets/images/background.png");
     background-size: cover;
 }
 </style>
