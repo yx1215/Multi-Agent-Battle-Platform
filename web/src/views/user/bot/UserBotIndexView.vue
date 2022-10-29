@@ -36,7 +36,6 @@
                                         <label for="add-bot-code" class="form-label">Code</label>
                                         <VAceEditor
                                             v-model:value="botadd.content"
-                                            @init="editorInit"
                                             lang="c_cpp"
                                             theme="textmate"
                                             :options="{fontSize: 16}" 
@@ -84,8 +83,6 @@
                                                 <label for="update-bot-code" class="form-label">Code</label>
                                                 <VAceEditor
                                                     v-model:value="curbot.content"
-                                                    @init="editorInit"
-                                                    lang="c_cpp"
                                                     theme="textmate"
                                                     :options="{fontSize: 16}" 
                                                     style="height: 300px" />

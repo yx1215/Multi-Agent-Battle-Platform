@@ -3,11 +3,12 @@ import { Snake } from "./Snake";
 import { Wall } from "./Wall";
 
 export class GameMap extends AcGameObjects {
-    constructor(ctx, parent) {
+    constructor(ctx, parent, store) {
         super();
 
         this.ctx = ctx;
         this.parent = parent;
+        this.store = store;
         this.L = 0;
         this.rows = 13;
         this.cols = 14;
@@ -64,70 +65,71 @@ export class GameMap extends AcGameObjects {
         return true;
     }
 
-    check_connectivity(g, sx, sy, tx, ty){
-        if (sx === tx && sy === ty){
-            return true;
-        }
+    // check_connectivity(g, sx, sy, tx, ty){
+    //     if (sx === tx && sy === ty){
+    //         return true;
+    //     }
 
-        g[sx][sy] = true;
-        let dx = [-1, 0, 1, 0], dy = [0, 1, 0, -1];
+    //     g[sx][sy] = true;
+    //     let dx = [-1, 0, 1, 0], dy = [0, 1, 0, -1];
         
-        for (let i = 0; i < 4; i ++){
-            let x = sx + dx[i], y = sy + dy[i];
-            if (!g[x][y] && this.check_connectivity(g, x, y, tx, ty)){
-                return true;
-            }
-        }
+    //     for (let i = 0; i < 4; i ++){
+    //         let x = sx + dx[i], y = sy + dy[i];
+    //         if (!g[x][y] && this.check_connectivity(g, x, y, tx, ty)){
+    //             return true;
+    //         }
+    //     }
 
-        return false;
-    }
+    //     return false;
+    // }
 
     create_wall() {
-        const g = [];
-        for (let r = 0; r < this.rows; r ++ ){
-            g[r] = [];
-            for (let c = 0; c < this.cols; c ++){
-                g[r][c] = false;
-            }
-        }
+        // const g = [];
+        // for (let r = 0; r < this.rows; r ++ ){
+        //     g[r] = [];
+        //     for (let c = 0; c < this.cols; c ++){
+        //         g[r][c] = false;
+        //     }
+        // }
 
-        // add walls to the outside
-        for (let r = 0; r < this.rows; r ++) {
-            g[r][0] = g[r][this.cols - 1] = true;
-        }
+        // // add walls to the outside
+        // for (let r = 0; r < this.rows; r ++) {
+        //     g[r][0] = g[r][this.cols - 1] = true;
+        // }
 
-        for (let c = 0; c < this.cols; c ++) {
-            g[0][c] = g[this.rows - 1][c] = true;
-        }
+        // for (let c = 0; c < this.cols; c ++) {
+        //     g[0][c] = g[this.rows - 1][c] = true;
+        // }
 
-        // random create inner walls
+        // // random create inner walls
 
-        for (let i = 0; i < this.inner_walls_counts / 2; i ++){
-            for (let j = 0; j < 1000; j ++){
-                let r = parseInt(Math.random() * this.rows);
-                let c = parseInt(Math.random() * this.cols);
-                if (g[r][c] || g[this.rows - 1 - r][this.cols - 1 - c]){
-                    continue;
-                }
-                if ((r === this.rows - 2 && c === 1) || (c === this.cols - 2 && r === 1)){
-                    continue;
-                }
+        // for (let i = 0; i < this.inner_walls_counts / 2; i ++){
+        //     for (let j = 0; j < 1000; j ++){
+        //         let r = parseInt(Math.random() * this.rows);
+        //         let c = parseInt(Math.random() * this.cols);
+        //         if (g[r][c] || g[this.rows - 1 - r][this.cols - 1 - c]){
+        //             continue;
+        //         }
+        //         if ((r === this.rows - 2 && c === 1) || (c === this.cols - 2 && r === 1)){
+        //             continue;
+        //         }
 
-                g[r][c] = g[this.rows - 1 - r][this.cols - 1 - c] = true;
-                break;
-            }
-        }
+        //         g[r][c] = g[this.rows - 1 - r][this.cols - 1 - c] = true;
+        //         break;
+        //     }
+        // }
         
-        // flood fill to check connectivity
-        const copy_g = JSON.parse(JSON.stringify(g));
+        // // flood fill to check connectivity
+        // const copy_g = JSON.parse(JSON.stringify(g));
         
-        if (!this.check_connectivity(copy_g, this.rows - 2, 1, 1, this.cols - 2)){
-            return false;
-        }
+        // if (!this.check_connectivity(copy_g, this.rows - 2, 1, 1, this.cols - 2)){
+        //     return false;
+        // }
+        const g = this.store.state.pk.gamemap;
 
         for (let r = 0; r < this.rows; r ++ ){
             for (let c = 0; c < this.cols; c ++){
-                if (g[r][c]){
+                if (g[r][c] === 1){
                     this.walls.push(new Wall(r, c, this));
                 }
             }
@@ -138,27 +140,32 @@ export class GameMap extends AcGameObjects {
 
     add_listening_events() {
         this.ctx.canvas.focus();
-        const [snake0, snake1] = this.snakes;
+        // const [snake0, snake1] = this.snakes;
 
         this.ctx.canvas.addEventListener("keydown", e => {
-            if (e.key === 'w') snake0.set_direction(0);
-            else if (e.key === 'd') snake0.set_direction(1);
-            else if (e.key === 's') snake0.set_direction(2);
-            else if (e.key === 'a') snake0.set_direction(3);
-            else if (e.key === 'ArrowUp') snake1.set_direction(0);
-            else if (e.key === 'ArrowRight') snake1.set_direction(1);
-            else if (e.key === 'ArrowDown') snake1.set_direction(2);
-            else if (e.key === 'ArrowLeft') snake1.set_direction(3);
-            console.log(snake0.direction, snake1.direction);
+            let d = -1;
+            if (e.key === 'w') d = 0;
+            else if (e.key === 'd') d = 1;
+            else if (e.key === 's') d = 2;
+            else if (e.key === 'a') d = 3;
+            
+            if (d >= 0){
+                this.store.state.pk.socket.send(JSON.stringify({
+                    event: "move",
+                    direction: d,
+                }))
+            }
+
         })
     }
 
     start() {
-        for (let i = 0; i < 10000; i ++){
-            if (this.create_wall()){
-                break;
-            }
-        }
+        // for (let i = 0; i < 10000; i ++){
+        //     if (this.create_wall()){
+        //         break;
+        //     }
+        // }
+        this.create_wall();
         this.add_listening_events();
     }
 
