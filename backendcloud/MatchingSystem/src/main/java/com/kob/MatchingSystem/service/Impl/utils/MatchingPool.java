@@ -1,4 +1,4 @@
-package com.kob.MatchingSystem.Servicel.Impl.utils;
+package com.kob.MatchingSystem.service.Impl.utils;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,10 +27,10 @@ public class MatchingPool extends Thread{
         MatchingPool.restTemplate = restTemplate;
     }
 
-    public void addPlayer(Integer userId, Integer rating){
+    public void addPlayer(Integer userId, Integer rating, Integer botId){
         lock.lock();
         try {
-            players.add(new Player(userId, rating, 0));
+            players.add(new Player(userId, rating, 0, botId));
         } finally {
             lock.unlock();
         }
@@ -41,7 +41,7 @@ public class MatchingPool extends Thread{
         try {
             List<Player> newPlayers = new ArrayList<>();
             for (Player player: players){
-                if (player.getUserId().equals(userId)){
+                if (!player.getUserId().equals(userId)){
                     newPlayers.add(player);
                 }
             }
@@ -68,6 +68,8 @@ public class MatchingPool extends Thread{
         MultiValueMap<String, String> data = new LinkedMultiValueMap<>();
         data.add("aId", a.getUserId().toString());
         data.add("bId", b.getUserId().toString());
+        data.add("aBotId", a.getBotId().toString());
+        data.add("bBotId", b.getBotId().toString());
         restTemplate.postForObject(startGameUrl, data, String.class);
     }
     private void matchPlayers(){

@@ -1,4 +1,4 @@
-package com.kob.MatchingSystem.Servicel.Impl.utils;
+package com.kob.MatchingSystem.service.Impl.utils;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,4 +12,5 @@ public class Player{
     private Integer userId;
     private Integer rating;
     private Integer waitingTime;
+    private Integer botId;
 }

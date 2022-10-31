@@ -1,4 +1,4 @@
-package com.kob.MatchingSystem.Config;
+package com.kob.MatchingSystem.config;
 
 
 import org.springframework.context.annotation.Bean;

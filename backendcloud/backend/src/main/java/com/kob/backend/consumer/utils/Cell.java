@@ -9,5 +9,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class Cell {
 
-    int x, y;
+    int x;
+    int y;
 }

@@ -13,9 +13,19 @@ import java.util.List;
 @AllArgsConstructor
 public class Player {
     private Integer id;
+    private Integer botId; // -1 represents human playing
+    private String code;
     private Integer sx;
     private Integer sy;
     private List<Integer> steps;
+
+    public String getStepsString(){
+        StringBuilder builder = new StringBuilder();
+        for (int d: steps){
+            builder.append(d);
+        }
+        return builder.toString();
+    }
 
     // check if snake will increase
     private boolean checkTailIncreasing(int step){
@@ -37,10 +47,10 @@ public class Player {
             x += dx[d];
             y += dy[d];
             res.add(new Cell(x, y));
-            if (!checkTailIncreasing(++step)){
+            step += 1;
+            if (!checkTailIncreasing(step)){
                 res.remove(0);
             }
-            step ++;
         }
 
         return res;

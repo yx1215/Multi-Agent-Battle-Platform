@@ -3,7 +3,10 @@ package com.kob.backend.consumer.utils;
 
 import com.alibaba.fastjson.JSONObject;
 import com.kob.backend.consumer.WebSocketServer;
+import com.kob.backend.pojo.Bot;
 import com.kob.backend.pojo.Record;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -27,13 +30,38 @@ public class Game extends Thread{
     private final ReentrantLock lock = new ReentrantLock();
     private String status = "playing"; // playing -> finished
     private String loser = null; // A, B, all
-    public Game(Integer rows, Integer cols, Integer inner_walls_count, Integer idA, Integer idB){
+
+    private static final String addBotUrl = "http://127.0.0.1:3002/bot/add/";
+    public Game(Integer rows,
+                Integer cols,
+                Integer inner_walls_count,
+                Integer idA,
+                Integer idB,
+                Bot botA,
+                Bot botB){
         this.rows = rows;
         this.cols = cols;
         this.inner_walls_count = inner_walls_count;
         this.g = new int[rows][cols];
-        this.playerA = new Player(idA, this.rows - 2, 1, new ArrayList<>());
-        this.playerB = new Player(idB, 1, this.cols - 2, new ArrayList<>());
+
+        Integer botIdA = -1, botIdB = -1;
+
+        String codeA = "", codeB = "";
+
+        if (botA != null){
+            botIdA = botA.getId();
+            codeA = botA.getContent();
+
+        }
+
+
+        if (botB != null){
+            botIdB = botB.getId();
+            codeB = botB.getContent();
+        }
+
+        this.playerA = new Player(idA, botIdA, codeA, this.rows - 2, 1, new ArrayList<>());
+        this.playerB = new Player(idB, botIdB, codeB, 1, this.cols - 2, new ArrayList<>());
     }
 
     public Player getPlayerA() {
@@ -134,12 +162,50 @@ public class Game extends Thread{
         }
     }
 
+    // encode board into string
+    private String getInput(Player player){
+        // ----map----#sx#sy#mymove#osx#osy#omove
+        Player me, you;
+        if (player.getId().equals(playerA.getId())) {
+            me = playerA;
+            you = playerB;
+        } else {
+            you = playerA;
+            me = playerB;
+        }
+
+        return getMapString() +
+                "#" + me.getSx() +
+                "#" + me.getSy() +
+                "#" + "(" + me.getStepsString() + ")" +
+                "#" + you.getSx() +
+                "#" + you.getSy() +
+                "#" + "(" + you.getStepsString() + ")";
+    }
+
+    private void sendBotCode(Player player){
+        if (player.getBotId().equals(-1)){
+            return;
+        }
+
+        MultiValueMap<String, String> data = new LinkedMultiValueMap<>();
+
+        data.add("userId", player.getId().toString());
+        data.add("botCode", player.getCode());
+        data.add("input", getInput(player));
+
+        WebSocketServer.restTemplate.postForObject(addBotUrl, data, String.class);
+
+    }
     public boolean nextStep(){
         try {
-            Thread.sleep(200);
+            Thread.sleep(300);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+
+        sendBotCode(playerA);
+        sendBotCode(playerB);
 
         try{
             for (int i = 0; i < 100; i ++){
@@ -246,22 +312,14 @@ public class Game extends Thread{
                 playerB.getId(),
                 playerB.getSx(),
                 playerB.getSy(),
-                getStepsString(playerA.getSteps()),
-                getStepsString(playerB.getSteps()),
+                playerA.getStepsString(),
+                playerB.getStepsString(),
                 getMapString(),
                 loser,
                 new Date()
         );
 
         WebSocketServer.recordMapper.insert(record);
-    }
-
-    private String getStepsString(List<Integer> steps){
-        StringBuilder builder = new StringBuilder();
-        for (int d: steps){
-            builder.append(d);
-        }
-        return builder.toString();
     }
 
     private String getMapString(){
@@ -276,6 +334,12 @@ public class Game extends Thread{
 
     @Override
     public void run(){
+        // we need to sleep for 1s before start the game
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         for (int i = 0; i < 1000; i++){
             // if get next step
             if (nextStep()){

@@ -1,7 +1,7 @@
-package com.kob.MatchingSystem.Controller;
+package com.kob.MatchingSystem.controller;
 
 
-import com.kob.MatchingSystem.Servicel.MatchingService;
+import com.kob.MatchingSystem.service.MatchingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,7 +20,8 @@ public class MatchingController {
     public String addPlayer(@RequestParam MultiValueMap<String, String> data){
         Integer userId = Integer.parseInt(Objects.requireNonNull(data.getFirst("userId")));
         Integer rating = Integer.parseInt(Objects.requireNonNull(data.getFirst("rating")));
-        return matchingService.addPlayer(userId, rating);
+        Integer botId = Integer.parseInt(Objects.requireNonNull(data.getFirst("botId")));
+        return matchingService.addPlayer(userId, rating, botId);
     }
 
     @PostMapping("/player/remove/")

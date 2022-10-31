@@ -84,6 +84,7 @@
                                                 <VAceEditor
                                                     v-model:value="curbot.content"
                                                     theme="textmate"
+                                                    lang="c_cpp"
                                                     :options="{fontSize: 16}" 
                                                     style="height: 300px" />
                                             </div>
@@ -184,7 +185,7 @@ export default {
                         botadd.title = "";
                         botadd.description = "";
                         botadd.content = "";
-                        Modal.getInstance("#add-bot-btn").hide();
+                        Modal.getInstance("#add-bot-modal").hide();
                         refresh_bots();
                     } else {
                         botadd.error_message = resp.error_message;
